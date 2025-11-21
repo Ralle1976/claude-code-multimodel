@@ -2,7 +2,18 @@
 
 **Letzte Aktualisierung**: 21. November 2025
 
-## 📊 Neue Modelle (2025 Releases)
+> ⚠️ **WICHTIG - Tatsächlich verfügbare Modelle im Codex CLI**:
+>
+> Die in diesem Dokument recherchierten Modelle (o3-pro, o4-mini, etc.) sind **NICHT** direkt im Codex CLI verfügbar.
+>
+> **Tatsächlich verfügbare Modelle** (Stand November 2025):
+> - `gpt-5.1-codex` - Optimized for codex (EMPFOHLEN für Coding)
+> - `gpt-5.1-codex-mini` - Optimized for codex, cheaper & faster
+> - `gpt-5.1` - (default) Broad world knowledge, general reasoning
+>
+> Die folgenden Abschnitte dienen als Hintergrundinformation zu OpenAI's Modell-Entwicklung.
+
+## 📊 OpenAI Modell-Entwicklung 2025 (Hintergrundinformation)
 
 ### 🔵 OpenAI Models
 
