@@ -29,7 +29,7 @@ claude
 ```bash
 /openai-cli {
   "prompt": "Entwirf eine skalierbare Microservices-Architektur für ein E-Commerce-System",
-  "model": "o3-pro",
+  "model": "gpt-5.1-codex",
   "sandbox": "danger-full-access",
   "approval_policy": "never"
 }
@@ -39,7 +39,7 @@ claude
 ```bash
 /openai-cli {
   "prompt": "Schreibe eine Python-Funktion für Quicksort mit Unit-Tests",
-  "model": "o4-mini"
+  "model": "gpt-5.1-codex-mini"
 }
 ```
 
@@ -89,18 +89,18 @@ claude
 
 | Anforderung | OpenAI | Gemini |
 |-------------|--------|--------|
-| **Beste Qualität** | `o3-pro` | `gemini-3-pro-preview-11-2025` |
-| **Beste Speed** | `o4-mini` | `gemini-3.0-flash` |
+| **Beste Qualität** | `gpt-5.1-codex` | `gemini-3-pro-preview-11-2025` |
+| **Beste Speed** | `gpt-5.1-codex-mini` | `gemini-3.0-flash` |
 | **Große Codebases** | - | `gemini-3-pro-preview-11-2025` (1M context) |
-| **Debugging** | `o4-mini` | `gemini-3-pro-preview-11-2025-thinking` |
+| **Debugging** | `gpt-5.1-codex-mini` | `gemini-3-pro-preview-11-2025-thinking` |
 
 ### Für Allgemein
 
 | Anforderung | OpenAI | Gemini |
 |-------------|--------|--------|
 | **Balanced** | `gpt-5.1` | `gemini-2.5-pro` |
-| **Höchste Intelligenz** | `o3-pro` | `gemini-3-pro-preview-11-2025` |
-| **Schnellste Antworten** | `o4-mini` | `gemini-3.0-flash` |
+| **Höchste Intelligenz** | `gpt-5.1-codex` | `gemini-3-pro-preview-11-2025` |
+| **Schnellste Antworten** | `gpt-5.1-codex-mini` | `gemini-3.0-flash` |
 
 ---
 
@@ -187,7 +187,7 @@ claude
 # Cross-Check mit OpenAI
 /openai-cli {
   "prompt": "Designvorschläge für eine REST API mit User-Management",
-  "model": "o3-pro"
+  "model": "gpt-5.1-codex"
 }
 
 # Cross-Check mit Gemini

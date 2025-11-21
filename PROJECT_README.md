@@ -2,7 +2,7 @@
 
 **Version**: 0.1.0 | **Stand**: 21.11.2025
 
-Ermöglicht Claude Code die Verwendung von **OpenAI** (o3-pro, o4-mini, gpt-5.1) und **Google Gemini** (Gemini 3) über deren offizielle CLIs.
+Ermöglicht Claude Code die Verwendung von **OpenAI** (gpt-5.1-codex, gpt-5.1-codex-mini, gpt-5.1) und **Google Gemini** (Gemini 3) über deren offizielle CLIs.
 
 ---
 
@@ -23,10 +23,10 @@ Die Commands sind jetzt **permanent installiert** und bleiben nach Neustarts erh
 
 ```bash
 # OpenAI - Beste Qualität
-/openai-cli {"prompt": "Entwirf eine Microservices-Architektur", "model": "o3-pro"}
+/openai-cli {"prompt": "Entwirf eine Microservices-Architektur", "model": "gpt-5.1-codex"}
 
 # OpenAI - Schnelles Coding
-/openai-cli {"prompt": "Schreibe Quicksort in Python", "model": "o4-mini"}
+/openai-cli {"prompt": "Schreibe Quicksort in Python", "model": "gpt-5.1-codex-mini"}
 
 # Gemini - Höchste Intelligenz (1M Token Context)
 /gemini-cli {"prompt": "Analysiere diese Codebase", "model": "gemini-3-pro-preview-11-2025"}
@@ -58,10 +58,10 @@ claude-plugins-check      # Prüft gesamtes Setup
 
 ## 🎯 Top-Modelle 2025
 
-### OpenAI
-- **o3-pro** (Juni 2025) - 71.7% SWE-bench, beste Qualität
-- **o4-mini** (April 2025) - Optimiert für Coding & Math
-- **gpt-5.1** (August 2025) - Latest GPT flagship
+### OpenAI (Codex CLI)
+- **gpt-5.1-codex** (Nov 2025) - Optimiert für Codex, beste Coding-Performance
+- **gpt-5.1-codex-mini** (Nov 2025) - Schneller & günstiger
+- **gpt-5.1** (Aug 2025) - Default, general purpose
 
 ### Google Gemini
 - **gemini-3-pro-preview-11-2025** (Nov 2025) - 1501 Elo, 1M Token Context

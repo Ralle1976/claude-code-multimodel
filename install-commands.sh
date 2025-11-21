@@ -35,7 +35,7 @@ Der Command erwartet ein JSON-Objekt als Input:
 ```json
 {
   "prompt": "Deine Anfrage hier",
-  "model": "o3-pro",
+  "model": "gpt-5.1-codex",
   "sandbox": "danger-full-access",
   "approval_policy": "never"
 }
@@ -43,8 +43,8 @@ Der Command erwartet ein JSON-Objekt als Input:
 
 ## Verfügbare Modelle (2025)
 
-- `o3-pro` - Most capable reasoning model (beste Qualität)
-- `o4-mini` - Fast reasoning model (Coding optimiert)
+- `gpt-5.1-codex` - Most capable reasoning model (beste Qualität)
+- `gpt-5.1-codex-mini` - Fast reasoning model (Coding optimiert)
 - `o3-mini` - Smaller o3 model (schneller)
 - `gpt-5.1` - Latest GPT flagship
 - `gpt-4.1` - Previous generation
@@ -55,7 +55,7 @@ Der Command erwartet ein JSON-Objekt als Input:
 ```bash
 /openai-cli {
   "prompt": "Entwirf eine skalierbare Microservices-Architektur",
-  "model": "o3-pro",
+  "model": "gpt-5.1-codex",
   "sandbox": "danger-full-access",
   "approval_policy": "never"
 }
@@ -65,7 +65,7 @@ Der Command erwartet ein JSON-Objekt als Input:
 ```bash
 /openai-cli {
   "prompt": "Schreibe eine Python Binary Search Funktion",
-  "model": "o4-mini"
+  "model": "gpt-5.1-codex-mini"
 }
 ```
 

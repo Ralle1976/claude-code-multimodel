@@ -258,11 +258,11 @@ echo '{"prompt":"test"}' | \
 
 ## 📚 Verwendungsbeispiele (wenn alles funktioniert)
 
-### OpenAI/Codex (o3-mini)
+### OpenAI/Codex (gpt-5.1-codex-mini)
 ```
 /openai-cli {
   "prompt": "Erkläre Quicksort in Python",
-  "model": "o3-mini",
+  "model": "gpt-5.1-codex-mini",
   "sandbox": "danger-full-access",
   "approval_policy": "never"
 }
@@ -283,7 +283,7 @@ echo '{"prompt":"test"}' | \
 "Erkläre Binary Search"
 
 # Vergleiche mit OpenAI
-/openai-cli {"prompt": "Erkläre Binary Search", "model": "o3-mini"}
+/openai-cli {"prompt": "Erkläre Binary Search", "model": "gpt-5.1-codex-mini"}
 
 # Vergleiche mit Gemini
 /gemini-cli {"prompt": "Erkläre Binary Search", "model": "gemini-2.5-pro"}

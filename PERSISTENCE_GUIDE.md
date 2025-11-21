@@ -200,10 +200,10 @@ cat > ~/.claude/commands/openai-cli.md << 'EOF'
 Sendet Prompts an OpenAI über die Codex CLI.
 
 ## Usage
-/openai-cli {"prompt": "Deine Anfrage", "model": "o3-pro"}
+/openai-cli {"prompt": "Deine Anfrage", "model": "gpt-5.1-codex"}
 
 ## Modelle
-- o3-pro, o4-mini, o3-mini, gpt-5.1, gpt-4.1
+- gpt-5.1-codex, gpt-5.1-codex-mini, gpt-5.1
 EOF
 
 cat > ~/.claude/commands/gemini-cli.md << 'EOF'
