@@ -1,0 +1,36 @@
+{
+  "name": "context-compressor",
+  "version": "1.0.0",
+  "description": "LLMLingua-basierte Kontext-Komprimierung und Session-Memory fuer Claude Code",
+  "author": "ralle",
+  "license": "MIT",
+  "main": "context_compressor.py",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "compress": "node commands/compress.cjs",
+    "session-save": "node commands/session-save.cjs",
+    "session-load": "node commands/session-load.cjs",
+    "status": "python3 context_compressor.py status"
+  },
+  "claude": {
+    "commands": {
+      "compress": {
+        "description": "Komprimiert Text mit LLMLingua (bis 20x Reduktion)",
+        "file": "commands/compress.cjs"
+      },
+      "session-save": {
+        "description": "Speichert Session-Zusammenfassung fuer naechsten Claude-Start",
+        "file": "commands/session-save.cjs"
+      },
+      "session-load": {
+        "description": "Laedt letzte Session-Zusammenfassung",
+        "file": "commands/session-load.cjs"
+      }
+    },
+    "agents": []
+  }
+}
