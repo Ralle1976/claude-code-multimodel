@@ -12,8 +12,8 @@
 Wir verwenden **symbolische Links**, nicht kopierte Dateien:
 
 ```bash
-~/.claude/commands/openai-cli -> /home/ralle/.../openai-cli.cjs
-~/.claude/commands/gemini-cli -> /home/ralle/.../gemini-cli.cjs
+~/.claude/commands/openai-cli -> $HOME/.../openai-cli.cjs
+~/.claude/commands/gemini-cli -> $HOME/.../gemini-cli.cjs
 ```
 
 **Vorteile**:
@@ -85,7 +85,7 @@ fi
 ```bash
 claude-commands-install
 # Oder direkt:
-/home/ralle/claude-code-multimodel/install-commands.sh
+$HOME/claude-code-multimodel/install-commands.sh
 ```
 
 ### Szenario 3: Plugin-Verzeichnis wurde verschoben
@@ -140,8 +140,8 @@ ls -la ~/.claude/commands/ | grep -E "openai-cli|gemini-cli"
 
 **Erwartet**:
 ```
-lrwxrwxrwx ... openai-cli -> /home/ralle/.../openai-cli.cjs
-lrwxrwxrwx ... gemini-cli -> /home/ralle/.../gemini-cli.cjs
+lrwxrwxrwx ... openai-cli -> $HOME/.../openai-cli.cjs
+lrwxrwxrwx ... gemini-cli -> $HOME/.../gemini-cli.cjs
 -rw------- ... openai-cli.md
 -rw------- ... gemini-cli.md
 ```
@@ -186,10 +186,10 @@ mkdir -p ~/.claude/commands
 
 ### Schritt 2: Symlinks erstellen
 ```bash
-ln -sf /home/ralle/claude-code-multimodel/plugins/multi-provider-cli-chat/commands/openai-cli.cjs \
+ln -sf $HOME/claude-code-multimodel/plugins/multi-provider-cli-chat/commands/openai-cli.cjs \
        ~/.claude/commands/openai-cli
 
-ln -sf /home/ralle/claude-code-multimodel/plugins/multi-provider-cli-chat/commands/gemini-cli.cjs \
+ln -sf $HOME/claude-code-multimodel/plugins/multi-provider-cli-chat/commands/gemini-cli.cjs \
        ~/.claude/commands/gemini-cli
 ```
 
@@ -255,7 +255,7 @@ file ~/.claude/commands/openai-cli
 
 **Lösung**:
 ```bash
-chmod +x /home/ralle/claude-code-multimodel/plugins/multi-provider-cli-chat/commands/*.cjs
+chmod +x $HOME/claude-code-multimodel/plugins/multi-provider-cli-chat/commands/*.cjs
 ```
 
 ### Problem: Commands zeigen kein Output
@@ -281,7 +281,7 @@ grep "Claude Multi-Provider" ~/.bashrc
 **Lösung**:
 ```bash
 # Erneut ausführen
-/home/ralle/claude-code-multimodel/setup-shell-integration.sh
+$HOME/claude-code-multimodel/setup-shell-integration.sh
 source ~/.bashrc
 ```
 
@@ -297,7 +297,7 @@ Füge diese Dateien/Verzeichnisse zu deinem Backup hinzu:
 ~/.claude/commands/          # Die Command-Links
 ~/.claude/settings.json      # Claude-Konfiguration
 ~/.bashrc                    # Shell-Integration
-/home/ralle/claude-code-multimodel/plugins/  # Plugin-Verzeichnis
+$HOME/claude-code-multimodel/plugins/  # Plugin-Verzeichnis
 ```
 
 ### 2. Systemd-Service für Auto-Verification (Optional)
@@ -306,14 +306,16 @@ Für absolute Sicherheit könnte man einen systemd-Service erstellen, der bei je
 
 ```bash
 # /etc/systemd/system/claude-commands-verify.service
+# Hinweis: systemd expandiert $HOME nicht - hier den absoluten Pfad eintragen,
+# und <dein-benutzer> durch den eigenen Benutzernamen ersetzen.
 [Unit]
 Description=Verify Claude Commands
 After=multi-user.target
 
 [Service]
 Type=oneshot
-User=ralle
-ExecStart=/home/ralle/claude-code-multimodel/verify-commands.sh
+User=<dein-benutzer>
+ExecStart=/absoluter/pfad/zu/claude-code-multimodel/verify-commands.sh
 
 [Install]
 WantedBy=multi-user.target
@@ -323,7 +325,7 @@ WantedBy=multi-user.target
 
 ```bash
 # Täglich um 08:00 Uhr prüfen
-0 8 * * * /home/ralle/claude-code-multimodel/verify-commands.sh
+0 8 * * * $HOME/claude-code-multimodel/verify-commands.sh
 ```
 
 ---

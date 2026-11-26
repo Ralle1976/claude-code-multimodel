@@ -1,29 +1,54 @@
 #!/bin/bash
 # Multi-Provider CLI Chat Plugin - Command Installation
 # Installiert die Slash-Commands für Claude Code
+#
+# Alle Pfade werden relativ zum Repo-Root aufgeloest; es gibt keine
+# hartkodierten Benutzerverzeichnisse.
 
 set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PLUGIN_DIR="$SCRIPT_DIR/plugins/multi-provider-cli-chat"
+COMMANDS_DIR="$HOME/.claude/commands"
 
 echo "🔧 Multi-Provider CLI Chat Plugin - Command Installation"
 echo "=========================================================="
 echo ""
 
+# 0. Prüfe Plugin-Quellen (der Plugin-Ordner ist ein Git-Link, dessen Inhalt
+#    ohne .gitmodules nicht mitgeklont wird)
+echo "✓ Prüfe Plugin-Quellen..."
+missing=0
+for command_file in openai-cli.cjs gemini-cli.cjs; do
+    if [ ! -f "$PLUGIN_DIR/commands/$command_file" ]; then
+        echo "  ❌ Fehlt: $PLUGIN_DIR/commands/$command_file"
+        missing=1
+    fi
+done
+if [ "$missing" -eq 1 ]; then
+    echo ""
+    echo "❌ Plugin-Quellen fehlen in: $PLUGIN_DIR"
+    echo "   Der Ordner ist ein Git-Link (Submodul), für den dieses Repo keine"
+    echo "   .gitmodules-Datei enthält - 'git submodule update' kann ihn daher"
+    echo "   nicht holen. Klone das Plugin-Repo direkt nach:"
+    echo "   $PLUGIN_DIR"
+    exit 1
+fi
+echo "  ✓ Plugin-Quellen vorhanden"
+
 # 1. Erstelle Commands-Verzeichnis
-echo "✓ Erstelle ~/.claude/commands/ Verzeichnis..."
-mkdir -p ~/.claude/commands
+echo "✓ Erstelle $COMMANDS_DIR Verzeichnis..."
+mkdir -p "$COMMANDS_DIR"
 
 # 2. Erstelle Symlinks zu Command-Scripts
 echo "✓ Erstelle Symlinks zu Command-Scripts..."
-ln -sf /home/ralle/claude-code-multimodel/plugins/multi-provider-cli-chat/commands/openai-cli.cjs \
-       ~/.claude/commands/openai-cli
-
-ln -sf /home/ralle/claude-code-multimodel/plugins/multi-provider-cli-chat/commands/gemini-cli.cjs \
-       ~/.claude/commands/gemini-cli
+ln -sfn "$PLUGIN_DIR/commands/openai-cli.cjs" "$COMMANDS_DIR/openai-cli"
+ln -sfn "$PLUGIN_DIR/commands/gemini-cli.cjs" "$COMMANDS_DIR/gemini-cli"
 
 # 3. Erstelle Command-Dokumentationen
 echo "✓ Erstelle Command-Dokumentationen..."
 
-cat > ~/.claude/commands/openai-cli.md << 'EOF'
+cat > "$COMMANDS_DIR/openai-cli.md" << 'EOF'
 # OpenAI CLI Command
 
 Sendet Prompts an OpenAI über die Codex CLI (Account-basierte Auth, keine API-Keys).
@@ -76,7 +101,7 @@ codex login
 ```
 EOF
 
-cat > ~/.claude/commands/gemini-cli.md << 'EOF'
+cat > "$COMMANDS_DIR/gemini-cli.md" << 'EOF'
 # Gemini CLI Command
 
 Sendet Prompts an Google Gemini über die Gemini CLI (Account-basierte Auth, keine API-Keys).
@@ -124,14 +149,19 @@ EOF
 # 4. Validierung
 echo ""
 echo "✓ Validiere Installation..."
-if [ -L ~/.claude/commands/openai-cli ] && [ -L ~/.claude/commands/gemini-cli ]; then
+if [ -L "$COMMANDS_DIR/openai-cli" ] && [ -L "$COMMANDS_DIR/gemini-cli" ]; then
     echo "  ✓ Symlinks erfolgreich erstellt"
 else
     echo "  ❌ FEHLER: Symlinks fehlen!"
     exit 1
 fi
 
-if [ -f ~/.claude/commands/openai-cli.md ] && [ -f ~/.claude/commands/gemini-cli.md ]; then
+if [ ! -e "$COMMANDS_DIR/openai-cli" ] || [ ! -e "$COMMANDS_DIR/gemini-cli" ]; then
+    echo "  ❌ FEHLER: Symlinks zeigen ins Leere!"
+    exit 1
+fi
+
+if [ -f "$COMMANDS_DIR/openai-cli.md" ] && [ -f "$COMMANDS_DIR/gemini-cli.md" ]; then
     echo "  ✓ Dokumentationen erfolgreich erstellt"
 else
     echo "  ❌ FEHLER: Dokumentationen fehlen!"
@@ -144,7 +174,9 @@ echo "=========================================================="
 echo "✅ Installation erfolgreich!"
 echo ""
 echo "📋 Installierte Commands:"
-ls -lh ~/.claude/commands/ | grep -E "openai-cli|gemini-cli"
+# grep liefert Exit 1, wenn nichts matcht - unter `set -e` würde das Skript
+# hier sonst mit Fehlercode abbrechen.
+ls -lh "$COMMANDS_DIR" | grep -E "openai-cli|gemini-cli" || true
 echo ""
 echo "🚀 Verwendung:"
 echo "  1. Starte eine NEUE Claude-Session (wichtig!)"
@@ -152,8 +184,8 @@ echo "  2. Teste mit: /openai-cli {\"prompt\": \"test\"}"
 echo "  3. Oder mit:   /gemini-cli {\"prompt\": \"test\"}"
 echo ""
 echo "📚 Dokumentation:"
-echo "  - /openai-cli -> siehe ~/.claude/commands/openai-cli.md"
-echo "  - /gemini-cli -> siehe ~/.claude/commands/gemini-cli.md"
+echo "  - /openai-cli -> siehe $COMMANDS_DIR/openai-cli.md"
+echo "  - /gemini-cli -> siehe $COMMANDS_DIR/gemini-cli.md"
 echo ""
 echo "🔐 Auth erforderlich:"
 echo "  - OpenAI: codex login"

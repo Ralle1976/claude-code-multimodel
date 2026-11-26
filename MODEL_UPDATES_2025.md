@@ -316,9 +316,9 @@ Höchste Geschwindigkeit:
 - **OpenAI Model Comparison**: https://platform.openai.com/docs/models
 
 ### Plugin-Dokumentation
-- **README**: `/home/ralle/claude-code-multimodel/plugins/multi-provider-cli-chat/README.md`
-- **CLAUDE.md Integration**: `/home/ralle/CLAUDE.md` (Zeile 151-185)
-- **Troubleshooting**: `/home/ralle/claude-code-multimodel/PLUGIN_TROUBLESHOOTING.md`
+- **README**: `$HOME/claude-code-multimodel/plugins/multi-provider-cli-chat/README.md`
+- **CLAUDE.md Integration**: `~/.claude/CLAUDE.md` (Zeile 151-185)
+- **Troubleshooting**: `$HOME/claude-code-multimodel/PLUGIN_TROUBLESHOOTING.md`
 
 ---
 

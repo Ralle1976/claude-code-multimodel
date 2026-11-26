@@ -44,8 +44,11 @@ _VALIDATION_RULES = [
     ),
 ]
 
+# Payloads groesser als das hier werden nicht geprueft (Hook darf nicht haengen).
+MAX_INPUT_BYTES = 10 * 1024 * 1024
 
-def _validate_command(command: str) -> list[str]:
+
+def _validate_command(command: str) -> list:
     issues = []
     for pattern, message in _VALIDATION_RULES:
         if re.search(pattern, command):
@@ -53,12 +56,33 @@ def _validate_command(command: str) -> list[str]:
     return issues
 
 
+def _read_stdin() -> bytes:
+    """Liest den Payload als Bytes; json.loads erkennt das Encoding selbst."""
+    buffer = getattr(sys.stdin, "buffer", None)
+    if buffer is not None:
+        return buffer.read(MAX_INPUT_BYTES + 1)
+    return sys.stdin.read(MAX_INPUT_BYTES + 1).encode("utf-8", errors="replace")
+
+
 def main():
     try:
-        input_data = json.load(sys.stdin)
-    except json.JSONDecodeError as e:
+        raw_input = _read_stdin()
+    except (OSError, ValueError) as e:
+        print(f"Error: Could not read hook input: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    if len(raw_input) > MAX_INPUT_BYTES:
+        # Zu gross: nicht pruefen, aber den Tool-Call auch nicht blockieren.
+        sys.exit(0)
+
+    try:
+        input_data = json.loads(raw_input)
+    except (json.JSONDecodeError, UnicodeDecodeError) as e:
         print(f"Error: Invalid JSON input: {e}", file=sys.stderr)
         # Exit code 1 shows stderr to the user but not to Claude
+        sys.exit(1)
+
+    if not isinstance(input_data, dict):
         sys.exit(1)
 
     tool_name = input_data.get("tool_name", "")
@@ -66,9 +90,11 @@ def main():
         sys.exit(0)
 
     tool_input = input_data.get("tool_input", {})
-    command = tool_input.get("command", "")
+    if not isinstance(tool_input, dict):
+        sys.exit(0)
 
-    if not command:
+    command = tool_input.get("command", "")
+    if not isinstance(command, str) or not command:
         sys.exit(0)
 
     issues = _validate_command(command)
@@ -77,6 +103,8 @@ def main():
             print(f"• {message}", file=sys.stderr)
         # Exit code 2 blocks tool call and shows stderr to Claude
         sys.exit(2)
+
+    sys.exit(0)
 
 
 if __name__ == "__main__":

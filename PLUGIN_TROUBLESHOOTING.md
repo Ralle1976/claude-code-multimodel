@@ -18,7 +18,7 @@ cat ~/.claude/settings.json | grep -A 5 "plugins"
 "plugins": {
   "local": [
     {
-      "path": "/home/ralle/claude-code-multimodel/plugins/multi-provider-cli-chat",
+      "path": "$HOME/claude-code-multimodel/plugins/multi-provider-cli-chat",
       "enabled": true
     }
   ]
@@ -31,7 +31,7 @@ cat ~/.claude/settings.json | grep -A 5 "plugins"
 cp ~/.claude/settings.json ~/.claude/settings.json.backup
 
 # Dann manuell editieren oder mit jq:
-jq '.plugins.local += [{"path": "/home/ralle/claude-code-multimodel/plugins/multi-provider-cli-chat", "enabled": true}]' \
+jq '.plugins.local += [{"path": "$HOME/claude-code-multimodel/plugins/multi-provider-cli-chat", "enabled": true}]' \
   ~/.claude/settings.json > ~/.claude/settings.json.tmp && \
   mv ~/.claude/settings.json.tmp ~/.claude/settings.json
 ```
@@ -124,7 +124,7 @@ gemini "Hello" 2>&1 | grep -i "rate\|limit\|quota"
 ### Check-Script ausführen
 
 ```bash
-/home/ralle/claude-code-multimodel/reload-plugins.sh
+$HOME/claude-code-multimodel/reload-plugins.sh
 ```
 
 Dieses Script prüft:
@@ -138,7 +138,7 @@ Dieses Script prüft:
 ### Shell-Integration installieren
 
 ```bash
-/home/ralle/claude-code-multimodel/setup-shell-integration.sh
+$HOME/claude-code-multimodel/setup-shell-integration.sh
 source ~/.bashrc
 ```
 
@@ -211,7 +211,7 @@ Danach zeigt jede neue Shell:
 ```bash
 # Teste Command direkt
 echo '{"prompt":"test"}' | \
-  node /home/ralle/claude-code-multimodel/plugins/multi-provider-cli-chat/commands/openai-cli.cjs
+  node $HOME/claude-code-multimodel/plugins/multi-provider-cli-chat/commands/openai-cli.cjs
 ```
 
 **Mögliche Ausgaben**:
@@ -302,7 +302,7 @@ cat > /tmp/plugin-debug.log << EOF
 $(cat ~/.claude/settings.json)
 
 === Plugin-Struktur ===
-$(ls -laR /home/ralle/claude-code-multimodel/plugins/multi-provider-cli-chat/)
+$(ls -laR $HOME/claude-code-multimodel/plugins/multi-provider-cli-chat/)
 
 === CLI-Versionen ===
 codex: $(codex --version 2>&1)
@@ -312,10 +312,10 @@ gemini: $(gemini --version 2>&1)
 $PATH
 
 === Test OpenAI CLI ===
-$(echo '{"prompt":"test"}' | node /home/ralle/claude-code-multimodel/plugins/multi-provider-cli-chat/commands/openai-cli.cjs 2>&1)
+$(echo '{"prompt":"test"}' | node $HOME/claude-code-multimodel/plugins/multi-provider-cli-chat/commands/openai-cli.cjs 2>&1)
 
 === Test Gemini CLI ===
-$(echo '{"prompt":"test"}' | node /home/ralle/claude-code-multimodel/plugins/multi-provider-cli-chat/commands/gemini-cli.cjs 2>&1)
+$(echo '{"prompt":"test"}' | node $HOME/claude-code-multimodel/plugins/multi-provider-cli-chat/commands/gemini-cli.cjs 2>&1)
 EOF
 
 cat /tmp/plugin-debug.log
@@ -324,7 +324,7 @@ cat /tmp/plugin-debug.log
 ### Plugin-Repository kontaktieren
 
 Falls alle Lösungen fehlschlagen, öffne ein Issue mit dem Debug-Log:
-- Repository: `/home/ralle/claude-code-multimodel/plugins/multi-provider-cli-chat/.git`
+- Repository: `$HOME/claude-code-multimodel/plugins/multi-provider-cli-chat/.git`
 - Include: Debug-Log, Fehlermeldungen, Schritte zur Reproduktion
 
 ---
@@ -343,4 +343,4 @@ Das Plugin funktioniert korrekt, wenn:
 
 *Erstellt: 2025-11-21*
 *Plugin-Version: 0.1.0*
-*Für Fragen siehe: `/home/ralle/claude-code-multimodel/plugins/multi-provider-cli-chat/README.md`*
+*Für Fragen siehe: `$HOME/claude-code-multimodel/plugins/multi-provider-cli-chat/README.md`*

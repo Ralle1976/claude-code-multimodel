@@ -7,6 +7,9 @@
     using either Docker or Podman as the container backend. It must be executed from the root
     directory of your project and assumes the script is located in a 'Script' subdirectory.
 
+    Native commands (docker/podman/devcontainer) do not throw on a non-zero exit code in
+    PowerShell, so every call is checked explicitly via $LASTEXITCODE.
+
 .PARAMETER Backend
     Specifies the container backend to use. Valid values are 'docker' or 'podman'.
 
@@ -37,6 +40,48 @@ param(
 Write-Host "--- DevContainer Startup & Connection Script ---"
 Write-Host "Using backend: $($Backend)"
 
+# Exit code of the most recent Invoke-Native call.
+$script:LastNativeExitCode = 0
+
+function Invoke-Native {
+    <#
+        Runs a native command, keeps its output visible and records the exit
+        code in $script:LastNativeExitCode.
+
+        Unlike cmdlets, native executables never raise a terminating error in
+        PowerShell - the exit code has to be inspected manually. The function
+        deliberately returns nothing so command output stays on the pipeline.
+    #>
+    param(
+        [Parameter(Mandatory = $true)][string]$Command,
+        [string[]]$Arguments = @(),
+        [switch]$AllowFailure
+    )
+
+    & $Command @Arguments
+    $script:LastNativeExitCode = $LASTEXITCODE
+
+    if ($script:LastNativeExitCode -ne 0 -and -not $AllowFailure) {
+        throw "Command '$Command $($Arguments -join ' ')' failed with exit code $script:LastNativeExitCode."
+    }
+}
+
+function Invoke-NativeQuiet {
+    <# Same as Invoke-Native, but suppresses all command output. #>
+    param(
+        [Parameter(Mandatory = $true)][string]$Command,
+        [string[]]$Arguments = @(),
+        [switch]$AllowFailure
+    )
+
+    & $Command @Arguments *> $null
+    $script:LastNativeExitCode = $LASTEXITCODE
+
+    if ($script:LastNativeExitCode -ne 0 -and -not $AllowFailure) {
+        throw "Command '$Command $($Arguments -join ' ')' failed with exit code $script:LastNativeExitCode."
+    }
+}
+
 # --- Prerequisite Check ---
 Write-Host "Checking for required commands..."
 try {
@@ -63,8 +108,13 @@ if ($Backend -eq 'podman') {
     # --- Step 1a: Initialize Podman machine ---
     Write-Host "Initializing Podman machine 'claudeVM'..."
     try {
-        & podman machine init claudeVM
-        Write-Host "Podman machine 'claudeVM' initialized or already exists."
+        # An already existing machine makes 'init' fail; that is not fatal here.
+        Invoke-Native -Command 'podman' -Arguments @('machine', 'init', 'claudeVM') -AllowFailure
+        if ($script:LastNativeExitCode -ne 0) {
+            Write-Warning "Podman machine 'claudeVM' could not be created (exit code $script:LastNativeExitCode) - it may already exist."
+        } else {
+            Write-Host "Podman machine 'claudeVM' initialized."
+        }
     } catch {
         Write-Error "Failed to initialize Podman machine: $($_.Exception.Message)"
         exit 1 # Exit script on error
@@ -73,7 +123,7 @@ if ($Backend -eq 'podman') {
     # --- Step 1b: Start Podman machine ---
     Write-Host "Starting Podman machine 'claudeVM'..."
     try {
-        & podman machine start claudeVM -q
+        Invoke-NativeQuiet -Command 'podman' -Arguments @('machine', 'start', 'claudeVM', '-q')
         Write-Host "Podman machine started or already running."
     } catch {
         Write-Error "Failed to start Podman machine: $($_.Exception.Message)"
@@ -83,10 +133,14 @@ if ($Backend -eq 'podman') {
     # --- Step 2: Set default connection ---
     Write-Host "Setting default Podman connection to 'claudeVM'..."
     try {
-        & podman system connection default claudeVM
-        Write-Host "Default connection set."
+        Invoke-NativeQuiet -Command 'podman' -Arguments @('system', 'connection', 'default', 'claudeVM') -AllowFailure
+        if ($script:LastNativeExitCode -eq 0) {
+            Write-Host "Default connection set."
+        } else {
+            Write-Warning "Failed to set default Podman connection (exit code $script:LastNativeExitCode) - may be already set or machine issue."
+        }
     } catch {
-        Write-Warning "Failed to set default Podman connection (may be already set or machine issue): $($_.Exception.Message)"
+        Write-Warning "Failed to set default Podman connection: $($_.Exception.Message)"
     }
 
 } elseif ($Backend -eq 'docker') {
@@ -95,7 +149,7 @@ if ($Backend -eq 'podman') {
     # --- Step 1 & 2: Check Docker Desktop ---
     Write-Host "Checking if Docker Desktop is running and docker command is available..."
     try {
-        docker info | Out-Null
+        Invoke-NativeQuiet -Command 'docker' -Arguments @('info')
         Write-Host "Docker Desktop (daemon) is running."
     } catch {
         Write-Error "Docker Desktop is not running or docker command not found."
@@ -111,7 +165,7 @@ try {
     if ($Backend -eq 'podman') {
         $arguments += '--docker-path', 'podman'
     }
-    & devcontainer @arguments
+    Invoke-Native -Command 'devcontainer' -Arguments $arguments
     Write-Host "DevContainer startup process completed."
 } catch {
     Write-Error "Failed to bring up DevContainer: $($_.Exception.Message)"
@@ -123,7 +177,18 @@ Write-Host "Finding the DevContainer ID..."
 $currentFolder = (Get-Location).Path
 
 try {
-    $containerId = (& $Backend ps --filter "label=devcontainer.local_folder=$currentFolder" --format '{{.ID}}').Trim()
+    # Several containers can match; take the first non-empty line. Calling
+    # .Trim() on the raw pipeline output fails when it is an array.
+    $rawId = & $Backend ps --filter "label=devcontainer.local_folder=$currentFolder" --format '{{.ID}}'
+    $psExit = $LASTEXITCODE
+    if ($psExit -ne 0) {
+        throw "Command '$Backend ps' failed with exit code $psExit."
+    }
+
+    $containerId = @($rawId) |
+        Where-Object { $_ -and "$_".Trim() } |
+        ForEach-Object { "$_".Trim() } |
+        Select-Object -First 1
 } catch {
     $displayCommand = "$Backend ps --filter `"label=devcontainer.local_folder=$currentFolder`" --format '{{.ID}}'"
     Write-Error "Failed to get container ID (Command: $displayCommand): $($_.Exception.Message)"
@@ -141,7 +206,11 @@ Write-Host "Found container ID: $containerId"
 Write-Host "Executing 'claude' command and then starting zsh session inside container $($containerId)..."
 try {
     & $Backend exec -it $containerId zsh -c 'claude; exec zsh'
-    Write-Host "Interactive session ended."
+    $execExit = $LASTEXITCODE
+    Write-Host "Interactive session ended (exit code $execExit)."
+    if ($execExit -ne 0) {
+        Write-Warning "The interactive session returned exit code $execExit."
+    }
 } catch {
     $displayCommand = "$Backend exec -it $containerId zsh -c 'claude; exec zsh'"
     Write-Error "Failed to execute command inside container (Command: $displayCommand): $($_.Exception.Message)"

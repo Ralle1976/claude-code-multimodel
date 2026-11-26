@@ -138,14 +138,14 @@ detectTaskType('Explain how X works') → 'explanation'
 ### For New Installations
 
 ```bash
-cd /home/ralle/claude-code-multimodel
+cd $HOME/claude-code-multimodel
 ./install-commands.sh
 ```
 
 ### For Existing Installations
 
 ```bash
-cd /home/ralle/claude-code-multimodel
+cd $HOME/claude-code-multimodel
 ./upgrade-to-circuit-breaker.sh
 ```
 

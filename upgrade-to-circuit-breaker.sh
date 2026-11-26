@@ -6,10 +6,14 @@
 # This script upgrades the openai-cli and gemini-cli commands
 # to use the improved versions with circuit breaker protection.
 #
+# The plugin directory is resolved relative to this script (no hardcoded
+# home directory).
+#
 
 set -e
 
-PLUGIN_DIR="/home/ralle/claude-code-multimodel/plugins/multi-provider-cli-chat"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PLUGIN_DIR="$SCRIPT_DIR/plugins/multi-provider-cli-chat"
 COMMANDS_DIR="$HOME/.claude/commands"
 
 echo "=== Multi-Provider CLI Chat - Circuit Breaker Upgrade ==="
@@ -23,12 +27,14 @@ fi
 
 # Check if improved versions exist
 if [ ! -f "$PLUGIN_DIR/commands/openai-cli-improved.cjs" ]; then
-  echo "❌ openai-cli-improved.cjs not found"
+  echo "❌ openai-cli-improved.cjs not found in $PLUGIN_DIR/commands"
+  echo "   (the plugin directory is a git link without content; this repository"
+  echo "   has no .gitmodules file, so 'git submodule update' cannot fetch it)"
   exit 1
 fi
 
 if [ ! -f "$PLUGIN_DIR/commands/gemini-cli-improved.cjs" ]; then
-  echo "❌ gemini-cli-improved.cjs not found"
+  echo "❌ gemini-cli-improved.cjs not found in $PLUGIN_DIR/commands"
   exit 1
 fi
 
@@ -64,17 +70,17 @@ echo "✓ Upgraded gemini-cli.cjs"
 echo ""
 
 # Update symlinks in ~/.claude/commands/
+# `ln -sfn` ersetzt den Link selbst statt seines Ziels und braucht kein
+# vorheriges `rm`.
 if [ -L "$COMMANDS_DIR/openai-cli" ]; then
   echo "Updating openai-cli symlink..."
-  rm "$COMMANDS_DIR/openai-cli"
-  ln -s "$PLUGIN_DIR/commands/openai-cli.cjs" "$COMMANDS_DIR/openai-cli"
+  ln -sfn "$PLUGIN_DIR/commands/openai-cli.cjs" "$COMMANDS_DIR/openai-cli"
   echo "✓ Updated openai-cli symlink"
 fi
 
 if [ -L "$COMMANDS_DIR/gemini-cli" ]; then
   echo "Updating gemini-cli symlink..."
-  rm "$COMMANDS_DIR/gemini-cli"
-  ln -s "$PLUGIN_DIR/commands/gemini-cli.cjs" "$COMMANDS_DIR/gemini-cli"
+  ln -sfn "$PLUGIN_DIR/commands/gemini-cli.cjs" "$COMMANDS_DIR/gemini-cli"
   echo "✓ Updated gemini-cli symlink"
 fi
 

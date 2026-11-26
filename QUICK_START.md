@@ -8,10 +8,10 @@ Schnelleinstieg für die Verwendung von OpenAI und Gemini über Claude Code.
 
 ```bash
 # 1. Commands installieren
-/home/ralle/claude-code-multimodel/install-commands.sh
+$HOME/claude-code-multimodel/install-commands.sh
 
 # 2. Shell-Integration aktivieren (optional, aber empfohlen)
-/home/ralle/claude-code-multimodel/setup-shell-integration.sh
+$HOME/claude-code-multimodel/setup-shell-integration.sh
 source ~/.bashrc
 
 # 3. Neue Claude-Session starten

@@ -9,12 +9,12 @@
  * ratio: Anteil der zu behaltenden Tokens (0.0-1.0)
  *        Standard: 0.5 (50% behalten)
  *
- * Verwendet LLMLingua fuer intelligente Komprimierung
- * ohne signifikanten Bedeutungsverlust.
+ * Der Text wird ausschliesslich ueber stdin an das Python-Skript uebergeben
+ * (kein Shell-Aufruf, keine Argument-Interpolation).
  */
 
-const { execSync, spawn } = require("node:child_process");
 const path = require("path");
+const { runPython } = require("../lib/python-runner.cjs");
 
 const SCRIPT_DIR = path.dirname(__dirname);
 const PYTHON_SCRIPT = path.join(SCRIPT_DIR, "context_compressor.py");
@@ -26,72 +26,70 @@ async function readStdinJson() {
   }
   if (!chunks.length) return {};
   try {
-    return JSON.parse(Buffer.concat(chunks).toString("utf8"));
-  } catch (err) {
+    const parsed = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
     return {};
   }
 }
 
+function printJson(payload) {
+  console.log(JSON.stringify(payload, null, 2));
+}
+
 async function main() {
   const payload = await readStdinJson();
-  const text = payload.text || "";
+  const text = typeof payload.text === "string" ? payload.text : "";
 
   if (!text) {
-    console.log(JSON.stringify({
+    printJson({
       success: false,
       error: "missing_text",
-      message: "Bitte Text angeben: {\"text\": \"Langer Text...\"}"
-    }, null, 2));
+      message: "Bitte Text angeben: {\"text\": \"Langer Text...\"}",
+    });
     return;
   }
 
-  try {
-    // Use spawn to handle large text via stdin
-    const child = spawn("python3", [PYTHON_SCRIPT, "compress"], {
-      stdio: ["pipe", "pipe", "pipe"],
-      timeout: 120000
+  // ratio is optional; only forward it when it is a sane number so the
+  // Python side never receives a value it would silently clamp.
+  const args = ["compress"];
+  const ratio = Number(payload.ratio);
+  if (Number.isFinite(ratio) && ratio > 0 && ratio <= 1 && ratio !== 0.5) {
+    args.push("--ratio", String(ratio));
+  }
+
+  const result = await runPython(PYTHON_SCRIPT, args, { input: text });
+
+  if (result.timedOut) {
+    printJson({
+      success: false,
+      error: "timeout",
+      message: "Komprimierung hat das Zeitlimit ueberschritten.",
     });
+    return;
+  }
 
-    let stdout = "";
-    let stderr = "";
-
-    child.stdout.on("data", (data) => {
-      stdout += data.toString();
-    });
-
-    child.stderr.on("data", (data) => {
-      stderr += data.toString();
-    });
-
-    child.stdin.write(text);
-    child.stdin.end();
-
-    await new Promise((resolve, reject) => {
-      child.on("close", (code) => {
-        if (code === 0) {
-          resolve();
-        } else {
-          reject(new Error(`Process exited with code ${code}: ${stderr}`));
-        }
-      });
-      child.on("error", reject);
-    });
-
-    // Try to parse as JSON, otherwise return raw
-    try {
-      const result = JSON.parse(stdout);
-      console.log(JSON.stringify(result, null, 2));
-    } catch {
-      console.log(stdout);
-    }
-
-  } catch (error) {
-    console.log(JSON.stringify({
+  if (result.code !== 0) {
+    printJson({
       success: false,
       error: "compression_failed",
-      message: error.message
-    }, null, 2));
+      message: (result.stderr || "Unbekannter Fehler").trim(),
+    });
+    return;
+  }
+
+  // Try to parse as JSON, otherwise return raw
+  try {
+    printJson(JSON.parse(result.stdout));
+  } catch {
+    console.log(result.stdout);
   }
 }
 
-main().catch(console.error);
+main().catch((error) => {
+  printJson({
+    success: false,
+    error: "unexpected_error",
+    message: String(error && error.message ? error.message : error),
+  });
+});

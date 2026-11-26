@@ -1,0 +1,9 @@
+{
+  "name": "context-compressor",
+  "description": "LLMLingua-based context compression and session memory for Claude Code",
+  "version": "1.0.0",
+  "author": {
+    "name": "Ralle1976"
+  },
+  "license": "MIT"
+}

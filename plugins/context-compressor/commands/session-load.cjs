@@ -9,28 +9,61 @@
  * falls vorhanden.
  */
 
-const { execSync } = require("node:child_process");
 const path = require("path");
+const { runPython } = require("../lib/python-runner.cjs");
 
 const SCRIPT_DIR = path.dirname(__dirname);
 const PYTHON_SCRIPT = path.join(SCRIPT_DIR, "context_compressor.py");
 
+function printJson(payload) {
+  console.log(JSON.stringify(payload, null, 2));
+}
+
 async function main() {
-  try {
-    const result = execSync(
-      `python3 "${PYTHON_SCRIPT}" load-session`,
-      { encoding: "utf8", timeout: 10000 }
-    );
-    console.log(result);
-  } catch (error) {
-    console.log(JSON.stringify({
+  const result = await runPython(PYTHON_SCRIPT, ["load-session"], {
+    timeoutMs: 10000,
+  });
+
+  if (result.timedOut) {
+    printJson({
+      success: false,
+      error: "timeout",
+      message: "Laden hat das Zeitlimit ueberschritten.",
+    });
+    return;
+  }
+
+  if (result.code !== 0) {
+    printJson({
       success: false,
       error: "load_failed",
-      message: error.message
-    }, null, 2));
+      message: (result.stderr || "Unbekannter Fehler").trim(),
+    });
+    return;
+  }
+
+  try {
+    printJson(JSON.parse(result.stdout));
+  } catch {
+    console.log(result.stdout);
   }
 }
 
-// Consume stdin but ignore it
+// stdin wird konsumiert, aber inhaltlich ignoriert
+let started = false;
+function start() {
+  if (started) return;
+  started = true;
+  main().catch((error) => {
+    printJson({
+      success: false,
+      error: "unexpected_error",
+      message: String(error && error.message ? error.message : error),
+    });
+  });
+}
+
 process.stdin.resume();
-process.stdin.on("end", () => main().catch(console.error));
+process.stdin.on("end", start);
+process.stdin.on("close", start);
+process.stdin.on("error", start);

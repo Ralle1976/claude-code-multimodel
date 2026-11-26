@@ -87,6 +87,21 @@ claude-commands-install
 claude-plugins-check
 ```
 
+### Offline-Verifikation (Tests)
+```bash
+# Ein Befehl, echte Exit-Codes, kein Netzwerk:
+node tests/run-all.mjs
+
+# Einzeln:
+node --test tests/js                                      # Syntax, Manifeste, Public-Guards, Injection
+python -m unittest discover -s tests/py -t tests/py        # Python-Logik
+```
+
+Geprüft wird vollständig offline: Shell-/Python-/JavaScript-/TypeScript-/
+PowerShell-Syntax, JSON- und Plugin-Manifeste, Secret-/PII-/Pfad-Guards,
+Command-Injection-Regressionen sowie der Security-Hook (inkl. Path-Traversal).
+`CLAUDE_DISABLE_LLMLINGUA=1` verhindert Modell-Downloads in den Tests.
+
 ---
 
 ## ⚠️ Falls Commands fehlen

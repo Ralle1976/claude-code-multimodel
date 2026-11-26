@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/security_reminder_hook.py"
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/run-security-hook.sh"
           }
         ],
         "matcher": "Edit|Write|MultiEdit"
